@@ -1,0 +1,76 @@
+html{
+    margin: 0;
+    margin-bottom: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+header {
+    position: sticky;
+    top: 0.5rem;
+}
+
+nav {
+    width: 90vw;
+    justify-self: center;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    border-radius: 20px;
+    padding: 0 1rem;
+    background: linear-gradient(rgba(149, 191, 246, 0.3), rgba(149, 191, 246, 0.3));
+    backdrop-filter: blur(5px);
+}
+
+button.logo {
+    border: 0;
+    background-color: transparent
+}
+
+svg {
+    width: 4rem;
+    color: var(--dark-color);
+}
+
+form.search {
+    display: flex;
+    flex-direction: row;
+    gap: 1rem;
+}
+
+form.search input {
+    width: max(40vw, 10rem);
+    border: 1px solid var(--dark-color);
+    border-radius: 5px;
+    padding-left: 0.5rem;
+}
+
+from.search button.search_button {
+    padding: 0;
+}
+
+form.search button.search_button svg{
+    width: 1.65rem;
+}
+
+form button, nav button{
+    padding: 0.25rem 0.5rem;
+    border: 1px solid var(--dark-color);
+    border-radius: 5px;
+    background-color: var(--secondary-color);
+}
+
+form button.smart_button {
+    background-color: var(--tertiary-color);
+}
+
+form button.smart_button svg{
+    padding: 0;
+    width: 1.75rem;
+}
+
+label.label {
+    display: none;
+}

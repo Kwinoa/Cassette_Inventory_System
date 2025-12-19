@@ -1,13 +1,29 @@
 package org.cassettes.cassetteinventorysystem.entity;
 
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
+import jakarta.persistence.CollectionTable;
 import jakarta.persistence.Column;
+import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 
 @Entity
 public class Cassette {
+	
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "user_id", nullable = false)
+	private User user; 
+	
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private long id;
@@ -19,30 +35,49 @@ public class Cassette {
 	private long year;
 	
 	@Column(nullable = false)
-	private String label;
-	
-	@Column(nullable = false)
 	private String format;
 	
 	@Column(nullable = false)
-	private String thumb;
+	private String cover_image;
 	
 	@Column(nullable = false)
-	private String url;
+	private List<String> genre;
+	
+	@Column(nullable = false)
+	private List<String> style;
+	
+	@Column(nullable = false)
+	private LocalDate date;
+	
+	@ElementCollection
+	@CollectionTable(name = "cassette_tracks", joinColumns = @JoinColumn(name = "cassette_id"))
+	@Column(name = "track", nullable = false)
+	private List<String> track_list = new ArrayList<>();
 
-	public Cassette(long id, String title, long year, String label, String format, String thumb, String url) {
+	public Cassette(long id, String title, long year, String format, String cover_image,
+			List<String> genre, List<String> style, LocalDate date, List<String> track_list) {
 		super();
 		this.id = id;
 		this.title = title;
 		this.year = year;
-		this.label = label;
 		this.format = format;
-		this.thumb = thumb;
-		this.url = url;
+		this.cover_image = cover_image;
+		this.genre = genre;
+		this.style = style;
+		this.date = date;
+		this.track_list = track_list;
 	}
-	
+
 	public Cassette() {
 		super();
+	}
+	
+	public User getUser() {
+		return user;
+	}
+	
+	public void setUser(User user) {
+		this.user = user;
 	}
 
 	public long getId() {
@@ -69,14 +104,6 @@ public class Cassette {
 		this.year = year;
 	}
 
-	public String getLabel() {
-		return label;
-	}
-
-	public void setLabel(String label) {
-		this.label = label;
-	}
-
 	public String getFormat() {
 		return format;
 	}
@@ -85,19 +112,44 @@ public class Cassette {
 		this.format = format;
 	}
 
-	public String getThumb() {
-		return thumb;
+	public String getCover_image() {
+		return cover_image;
 	}
 
-	public void setThumb(String thumb) {
-		this.thumb = thumb;
+	public void setCover_image(String cover_image) {
+		this.cover_image = cover_image;
 	}
 
-	public String getUrl() {
-		return url;
+	public List<String> getGenre() {
+		return genre;
 	}
 
-	public void setUrl(String url) {
-		this.url = url;
+	public void setGenre(List<String> genre) {
+		this.genre = genre;
 	}
+
+	public List<String> getStyle() {
+		return style;
+	}
+
+	public void setStyle(List<String> style) {
+		this.style = style;
+	}
+	
+	public LocalDate getDate() {
+		return date;
+	}
+	
+	public void setDate(LocalDate date) {
+		this.date = date;
+	}
+	
+	public List<String> getTrack_List(){
+		return track_list;
+	}
+	
+	public void setTrack_List(List<String> track_list){
+		this.track_list = track_list;
+	}
+
 }

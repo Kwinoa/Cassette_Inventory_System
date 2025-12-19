@@ -1,0 +1,47 @@
+html {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-size: 18px;
+}
+
+div.list {
+    width: 95%;
+    display: flex;
+    flex-direction: column;
+    flex-wrap: wrap;
+}
+
+div.list ul {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.25rem;
+    padding-left: 0rem;
+}
+
+div.list ul li {
+    padding: 0.2rem 1rem;
+    border: 1px solid var(--dark-color);
+    border-radius: 15px;
+    font-size: 0.85rem;
+}
+
+div.list ul p {
+    margin-bottom: 0;
+}
+
+div.list button.toggleButton {
+    background-color: var(--secondary-color);
+    padding: 0.2rem 0.5rem;
+    border: 1.5px solid var(--dark-color);
+    border-radius: 15px;
+    box-shadow: 1px 1px 2px lightgrey;
+    font-size: 0.85rem;
+}
+
+div.card_info p.date_added {
+    font-size: 0.85rem;
+    color: rgb(104, 104, 104);
+}

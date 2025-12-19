@@ -1,0 +1,101 @@
+div.cassette_edit_container {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 1rem;
+    width: 100%;
+    margin: 0 auto;
+    padding: 3rem 0;
+}
+
+form.edit_form {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 2rem;
+}
+
+form.edit_form>div {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+form.edit_form>div>div {
+    display: flex;
+    flex-direction: column;
+}
+
+form img.image {
+    aspect-ratio: 3/4;
+    object-fit: cover;
+    width: 25rem;
+    border-radius: 8px;
+    border: 4px solid var(--secondary-color);
+}
+
+form.edit_form em.required {
+    color: var(--tertiary-color);
+}
+
+form input.edit_input {
+    color: black;
+    width: 24rem;
+    padding: 0.5rem;
+    border: 1px solid var(--dark-color);
+    border-radius: 6px;
+}
+
+form input.invalid_input {
+    color: var(--invalid);
+    border: 1px solid var(--invalid);
+}
+
+form label.hidden_label {
+    display: none;
+}
+
+form label.edit_label {
+    margin-bottom: 0.25rem;
+}
+
+form div div.buttons_container {
+    width: 100%;
+    display: flex;
+    flex-direction: row;
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+}
+
+form button.submit_button, form button.delete_button {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid var(--dark-color);
+    border-radius: 6px;
+}
+
+form button.submit_button:hover {
+    box-shadow: 1px 1px 3px var(--dark-color);
+}
+
+form div.invalid_message {
+    color: var(--invalid);
+}
+
+form .select {
+    width: 24rem;
+    color: black;
+    border: 1px solid var(--dark-color);
+    border-radius: 6px;
+}
+
+.select_valid_input__control {
+    border: 4px solid var(--dark-color);
+}
+
+/* When invalid */
+.invalid_select .select_valid_input__control {
+    border-color: var(--invalid) !important;
+    box-shadow: 0 0 0 1px var(--invalid) !important;
+}

@@ -1,0 +1,67 @@
+html {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-size: 18px;
+}
+
+div.collection_container {
+    max-width: min(90vw, 65rem);
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: .5rem;
+    padding: 2rem 0;
+}
+
+div.collection_container h1 {
+    font-size: 3rem;
+    margin-bottom: 0;
+}
+
+div.collection_container div {
+    width: 100%;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+}
+
+div.collection_container form {
+    display: flex;
+    flex-direction: row;
+    gap: 1rem;
+}
+
+div form button.search_button svg {
+    width: 1.75rem;
+}
+
+div button.add_button {
+    background-color: transparent;
+    border: none;
+}
+
+div button.add_button svg {
+    width: 3.5rem;
+}
+
+form label.hidden_label {
+    display: none;
+}
+
+form input.collection_input {
+    padding: 0.5rem;
+    width: max(30vw, 15rem);
+    border-radius: 5px;
+    border: 1px solid var(--dark-color);
+}
+
+ul.card_container {
+    width: 100%;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2rem;
+    padding-left: 0;
+}

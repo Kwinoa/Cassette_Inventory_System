@@ -1,0 +1,66 @@
+html {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-size: 18px;
+}
+
+button.add_button svg{
+    width: 1.75rem;
+}
+
+button.edit_button, button.add_button{
+    background-color: transparent;
+    border: none;
+}
+
+button.edit_button svg {
+    width: 2rem;
+}
+
+button.edit_button:hover {
+    cursor: pointer;
+}
+
+li.card {
+    background-color: white;
+    border-radius: 10px;
+}
+
+li.card div.card_info {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+    padding: 1rem;
+}
+
+li.card div.card_info div {
+    width: 100%;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+}
+
+li.card img {
+    width: 100%;
+    aspect-ratio: 4/3;
+    border-top-left-radius: 15px;
+    border-top-right-radius: 15px;
+    object-fit: cover;
+    object-position: top;
+}
+
+h3.title {
+    font-size: 1.5rem;
+    margin-bottom: 0;
+}
+
+p.year {
+    font-size: 1.15rem;
+}
+
+div.card_info p.date_added {
+    font-size: 0.85rem;
+    color: rgb(104, 104, 104);
+}
