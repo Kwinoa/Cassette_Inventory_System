@@ -1,0 +1,200 @@
+/* div .select {
+    width: 24rem;
+    color: black;
+    border: 1px solid var(--dark-color);
+    border-radius: 6px;
+} */
+
+div.player_container {
+    display: block !important;
+    margin: 2rem 0;
+}
+
+div.player_container button.spotify_login {
+    color: rgb(255, 255, 255);
+    margin: 0 4.15rem;
+    width: 10rem;
+    height: 3rem;
+    padding: 0.5rem;
+    border: none;
+    border-radius: 8px;
+    background-color: #2fd823;
+    align-self: center;
+}
+
+div.player_container div.cassette_container .song_select {
+    align-self: center;
+    background-color: transparent;
+    width: 21rem;
+}
+
+div.cassette_container {
+    background-color: #D7EAFA;
+    height: 26rem;
+    border-radius: 16px;
+    margin: 0 auto;
+    padding: 2rem;
+    aspect-ratio: 1.7/1;
+}
+
+div.cassette_container > div {
+    height: 100%;
+}
+
+div.cassette_container div.cassette_cover {
+    margin: 0 auto;
+    height: 80%;
+    border-radius: 12px;
+    /* background-image: url("../../assets/placeholderImage.png"); */
+    background-color: #e7f4fe;
+    display: flex;
+    padding: 1rem;
+    flex-direction: column;
+}
+
+div.cassette_container div.cassette_cover div.cassette_label {
+    /* background-color: rgba(255, 255, 255, 0.788); */
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    height: 55%;
+    color: rgba(67, 66, 66, 0.75);
+}
+
+div.cassette_label h2 {
+    font-size: 4rem;
+}
+
+div.cassette_label ul {
+    padding-left: 0;
+    display: flex;
+    flex-direction: column;
+    flex-wrap: wrap;
+    height: 100%;
+    width: 100%;
+    list-style-position: inside;
+}
+
+div.cassette_label li {
+    font-size: 1rem;
+    list-style-type: none;
+    max-width: 33%;
+    padding: 0 0.25rem;
+    margin: 0 0.1rem;
+    word-wrap:normal;
+}
+
+div.cassette_label li.highlight {
+    font-size: 1rem;
+    list-style-type: none;
+    max-width: 33%;
+    padding: 0.25rem;
+    margin: 0 0.1rem;
+    border-radius: 6px;;
+    background-color:rgba(255, 255, 255, 0.617)
+}
+
+div.cassette_container div.cassette_wheels {
+    height: 35%;
+    width: 80%;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    /* align-items: center; */
+    gap: 0.5rem;
+    margin: 0 auto;
+    background-color: #D7EAFA;
+    padding: .5rem;
+    border-radius: 3rem;
+}
+
+div.cassette_wheels button.wheel:hover, button.spinning:hover {
+    opacity: 1;
+    cursor: default;
+}
+
+div.cassette_wheels button.wheel {
+    width: 5rem;
+    border-radius: 60%;
+    background-image: url("../../assets/wheels.png");
+    background-color: var(--primary-color);
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+    border: none;
+}
+
+div.cassette_wheels button.spinning {
+    width: 5rem;
+    border-radius: 60%;
+    background-image: url("../../assets/wheels.png");
+    background-color: var(--primary-color);
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+    border: none;
+    animation: spin 3s linear infinite;
+}
+
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+div.cassette_container div.cassette_controls {
+    height: 20%;
+    display: flex;
+    flex-direction: row;
+    align-items: flex-end;
+    justify-content: center;
+    margin-top: 0.5rem;
+    gap: 2rem;
+}
+
+div.cassette_controls button {
+    background-color: transparent;
+    border: none;
+    font-size: 2rem;
+}
+
+div.cassette_controls button.play {
+    width: 3.5rem;
+    height: 3.5rem;
+    background-image: url("../../assets/play.png");
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+}
+
+div.cassette_controls button.pause {
+    width: 3.5rem;
+    height: 3.5rem;
+    background-image: url("../../assets/pause.png");
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+}
+
+div.cassette_controls button.rewind {
+    width: 3.5rem;
+    height: 3.5rem;
+    background-image: url("../../assets/rewind.png");
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+}
+
+div.cassette_controls button.forward {
+    width: 3.5rem;
+    height: 3.5rem;
+    background-image: url("../../assets/forward.png");
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+}

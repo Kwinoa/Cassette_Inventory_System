@@ -15,7 +15,7 @@ const EditComponent = () => {
     const { id } = useParams();
     const [cover_image, setCoverImage] = useState('');
     const [coverImageFile, setCoverImageFile] = useState(null);
-    const BASE_URL = "http://localhost:8080";
+    const BASE_URL = "http://127.0.0.1:8080";
     const [title, setTitle] = useState('');
     const [year, setYear] = useState('');
     const [genre, setGenre] = useState([]);

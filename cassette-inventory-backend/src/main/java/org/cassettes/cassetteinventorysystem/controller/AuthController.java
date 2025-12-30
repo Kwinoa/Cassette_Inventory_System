@@ -2,10 +2,12 @@ package org.cassettes.cassetteinventorysystem.controller;
 
 import org.cassettes.cassetteinventorysystem.dto.LoginRequest;
 import org.cassettes.cassetteinventorysystem.dto.UserResponse;
+import org.cassettes.cassetteinventorysystem.entity.ResponseStructure;
 import org.cassettes.cassetteinventorysystem.entity.User;
 import org.cassettes.cassetteinventorysystem.repository.UserRepository;
 import org.cassettes.cassetteinventorysystem.security.CustomUserDetails;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -36,13 +38,8 @@ public class AuthController {
     private PasswordEncoder passwordEncoder;
     
     private final SecurityContextRepository securityContextRepository = new HttpSessionSecurityContextRepository();
-    
-    @GetMapping("/debug/auth")
-    public String debugAuth(Authentication auth) {
-        return auth == null ? "AUTH IS NULL" : auth.getName();
-    }
 
-    @PostMapping("/api/auth/register")
+    @PostMapping("/api/register")
     public ResponseEntity<?> register(@RequestBody User user) {
 
         if (userRepository.findByEmail(user.getEmail()) != null) {
@@ -57,8 +54,8 @@ public class AuthController {
         return ResponseEntity.ok("User registered successfully");
     }
     
-    @PostMapping("/api/auth/login")
-    public ResponseEntity<?> login(@RequestBody LoginRequest request, HttpServletRequest httpRequest, HttpServletResponse httpResponse) {
+    @PostMapping("/api/login")
+    public ResponseEntity<ResponseStructure<User>> login(@RequestBody LoginRequest request, HttpServletRequest httpRequest, HttpServletResponse httpResponse) {
 
     	Authentication auth = authenticationManager.authenticate(
             new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword())
@@ -70,17 +67,23 @@ public class AuthController {
 
         // Important to persist session
         securityContextRepository.saveContext(context, httpRequest, httpResponse);
-
-        return ResponseEntity.ok("Login successful");
+        
+        ResponseStructure<User> structure = new ResponseStructure<>();
+        
+        structure.setStatusCode(HttpStatus.OK.value());
+        structure.setData(userRepository.findByEmail(request.getEmail()));
+        structure.setMessage("User Logged In Successfully");
+        
+        return new ResponseEntity<>(structure, HttpStatus.OK);
     }
     
-    @PostMapping("/api/auth/logout")
+    @PostMapping("/api/logout")
     public ResponseEntity<?> logout(HttpServletRequest request) {
         request.getSession().invalidate();
         return ResponseEntity.ok("Logged out");
     }
 
-    @GetMapping("/api/auth/getSelf")
+    @GetMapping("/api/getSelf")
     public ResponseEntity<?> currentUser(Authentication authentication) {
 
         if (authentication == null || !authentication.isAuthenticated()) {

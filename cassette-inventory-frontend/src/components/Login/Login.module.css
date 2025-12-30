@@ -9,6 +9,10 @@ div.cassette_login_container {
     padding: 3rem 0;
 }
 
+div.cassette_login_container h1 {
+    color: rgba(67, 66, 66, 0.85);
+}
+
 form.login_form {
     display: flex;
     flex-direction: column;
@@ -58,6 +62,9 @@ form label.login_label {
 }
 
 form button.login_button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
     width: min(40rem, 80vw);
     padding: 0.75rem;
     border: 1px solid var(--dark-color);

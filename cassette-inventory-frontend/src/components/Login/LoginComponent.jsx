@@ -6,7 +6,7 @@ import {AuthContext} from "../AuthContext/AuthContext"
 
 const LoginComponent = () => {
 
-    const {setIsLoggedIn, setFirstName, setLastName, setOfficialEmail} = useContext(AuthContext);
+    const {setIsLoggedIn, firstName, setFirstName, setLastName, setOfficialEmail} = useContext(AuthContext);
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [isChecked, setIsChecked] = useState(false);
@@ -64,13 +64,18 @@ const LoginComponent = () => {
         if (validateForm()) {
             const formData = { email, password};
             login(formData).then((response) => {
-                if(response.status == 200)
+                if(response.status == 200){
+                    setFirstName(response.data.data.firstName);
+                    sessionStorage.setItem("firstName", JSON.stringify(response.data.data.firstName));
+                    console.log("First Name:", response.data.data.firstName);
+                    setLastName(response.data.data.lastName);
+                    setOfficialEmail(response.data.data.email);
+                    console.log(response)
                     setIsLoggedIn(true);
-                    setFirstName(response.data.firstName);
-                    setLastName(response.data.lastName);
-                    setOfficialEmail(response.data.email);
+                    sessionStorage.setItem("isLoggedIn", true);
 
                     navigator("/");
+                }
             }).catch(error => {
                 console.log(error);
             })

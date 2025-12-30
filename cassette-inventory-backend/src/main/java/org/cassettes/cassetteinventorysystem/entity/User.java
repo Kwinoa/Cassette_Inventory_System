@@ -3,6 +3,8 @@ package org.cassettes.cassetteinventorysystem.entity;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -21,6 +23,7 @@ public class User {
     @Column(nullable = false, unique = true, length = 45)
     private String email;
      
+    @JsonIgnore
     @Column(nullable = false, length = 64)
     private String password;
      
@@ -32,6 +35,10 @@ public class User {
     
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
     private List<Cassette> cassettes = new ArrayList<>();
+    
+    @JsonIgnore
+    @Column(name="refresh_token", nullable = true, length=200)
+    private String spotifyRefreshToken;
 
 	public User(Long id, String email, String password, String firstName, String lastName) {
 		super();
@@ -84,6 +91,14 @@ public class User {
 
 	public void setLastName(String lastName) {
 		this.lastName = lastName;
+	}
+	
+	public String getSpotifyRefreshToken() {
+		return spotifyRefreshToken;
+	}
+	
+	public void setSpotifyRefreshToken(String refreshToken) {
+		this.spotifyRefreshToken = refreshToken;
 	}
      
 }

@@ -24,7 +24,9 @@ button.edit_button:hover {
 
 li.card {
     background-color: white;
-    border-radius: 10px;
+    border-radius: 18px;
+    color: rgba(67, 66, 66, 0.85);
+    /* border: 4px solid #D7EAFA; */
 }
 
 li.card div.card_info {
@@ -52,6 +54,7 @@ li.card img {
 }
 
 h3.title {
+    color: rgba(67, 66, 66, 0.9);
     font-size: 1.5rem;
     margin-bottom: 0;
 }
@@ -62,5 +65,5 @@ p.year {
 
 div.card_info p.date_added {
     font-size: 0.85rem;
-    color: rgb(104, 104, 104);
+    color: rgba(104, 104, 104, 0.727);
 }

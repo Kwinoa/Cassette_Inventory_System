@@ -16,8 +16,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 
 @RestController
-//Allows frontend to access backend endpoints (fetching url)
-@CrossOrigin(origins = "http://localhost:3000")
 //@RequestMapping("/search")
 public class DiscogsController {
 

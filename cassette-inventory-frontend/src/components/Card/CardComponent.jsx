@@ -1,15 +1,71 @@
-import React from 'react'
+import React, {useEffect, useContext} from 'react'
 import styles from './Card.module.css'
 import LabelComponent from '../Label/LabelComponent';
 import { useNavigate } from 'react-router-dom'
-import { saveCassette } from '../../services/CassetteService'
+import { setSpotifyAlbumUri, saveCassette, getUserCassettes, transferPlayback } from '../../services/CassetteService'
+import { AuthContext } from '../AuthContext/AuthContext'
 
 const CardComponent = ({ cassette }) => {
 
+    const {spotifyAuthorized, accessToken, officialEmail, cassettes, setCassettes} = useContext(AuthContext);
     const navigator = useNavigate();
+
+    useEffect(() => {
+        const accessToken = sessionStorage.getItem("access_token");
+
+        if(accessToken && cassette.id != 0){
+            if(!cassette.albumUri){
+                const list = cassette.title.split(" - ");
+                const artist = list[0];
+                const album = list[1];
+                console.log("Artist:", artist, "Album:", album);
+                setSpotifyAlbumUri(cassette.id, accessToken, artist, album).then((response) => {
+                    console.log(response);
+                    fetchData();
+                })
+            }
+        }
+    }, [spotifyAuthorized, accessToken, cassettes])
+
+    async function fetchData(){
+        try {
+            const response = await getUserCassettes();
+            const data = response.data.data;
+            // TODO: need to hash email to not expose & for security
+            const cassetteCache = {
+                email: officialEmail,
+                data: data
+            }
+                        
+            sessionStorage.setItem('cassette_cache', JSON.stringify(cassetteCache));
+            sessionStorage.setItem('cache_timestamp', Date.now()); 
+        } catch (error) {
+            console.error("Fetch failed", error);
+        }
+    }
 
     function goToEditPage() {
         navigator('/edit-cassette/' + cassette.id);
+    }
+
+    function addCassetteToCache(newCassette){
+        const rawCache = sessionStorage.getItem("cassette_cache");
+        let parsedCache = {data: []};
+
+        if(rawCache){
+            try{
+                parsedCache = JSON.parse(rawCache);
+            } catch(e){
+                console.error("Error parsing cache");
+            }
+        }
+
+        const updatedCache = [...parsedCache.data, newCassette];
+
+        const cache = { email: officialEmail, data: updatedCache};
+        sessionStorage.setItem("cassette_cache", JSON.stringify(cache));
+
+        setCassettes(updatedCache);
     }
 
     function addCassette(e) {
@@ -17,6 +73,7 @@ const CardComponent = ({ cassette }) => {
         console.log(cassette);
         saveCassette(cassette).then((response) => {
             console.log(response.data.data);
+            fetchData();
             navigator('/');
         }).catch(error => {
             console.log(error);

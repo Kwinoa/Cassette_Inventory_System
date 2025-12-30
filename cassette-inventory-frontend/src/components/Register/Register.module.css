@@ -56,7 +56,7 @@ form.register_form a.register_link:hover {
 }
 
 form input.register_input {
-    color: black;
+    color: rgba(67, 66, 66, 0.85);
     width: min(40rem, 80vw);
     padding: 0.5rem;
     border: 1px solid var(--dark-color);

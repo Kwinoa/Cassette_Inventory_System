@@ -22,6 +22,7 @@ public class Cassette {
 	
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "user_id", nullable = false)
+	@JsonIgnore
 	private User user; 
 	
 	@Id
@@ -49,13 +50,16 @@ public class Cassette {
 	@Column(nullable = false)
 	private LocalDate date;
 	
+	@Column(nullable = true)
+	private String albumUri;
+	
 	@ElementCollection
 	@CollectionTable(name = "cassette_tracks", joinColumns = @JoinColumn(name = "cassette_id"))
 	@Column(name = "track", nullable = false)
 	private List<String> track_list = new ArrayList<>();
 
 	public Cassette(long id, String title, long year, String format, String cover_image,
-			List<String> genre, List<String> style, LocalDate date, List<String> track_list) {
+			List<String> genre, List<String> style, LocalDate date, List<String> track_list, String albumUri) {
 		super();
 		this.id = id;
 		this.title = title;
@@ -66,6 +70,7 @@ public class Cassette {
 		this.style = style;
 		this.date = date;
 		this.track_list = track_list;
+		this.albumUri = albumUri;
 	}
 
 	public Cassette() {
@@ -150,6 +155,14 @@ public class Cassette {
 	
 	public void setTrack_List(List<String> track_list){
 		this.track_list = track_list;
+	}
+	
+	public String getAlbumUri() {
+		return albumUri;
+	}
+	
+	public void setAlbumUri(String albumUri) {
+		this.albumUri = albumUri;
 	}
 
 }

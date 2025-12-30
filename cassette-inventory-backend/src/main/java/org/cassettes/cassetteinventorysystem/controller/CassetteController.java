@@ -4,8 +4,10 @@ import java.util.List;
 
 import org.cassettes.cassetteinventorysystem.entity.Cassette;
 import org.cassettes.cassetteinventorysystem.entity.ResponseStructure;
+import org.cassettes.cassetteinventorysystem.entity.User;
 import org.cassettes.cassetteinventorysystem.service.CassetteService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -28,7 +30,16 @@ public class CassetteController {
 	// Retrieves a JSON param that is automatically deserialized into a cassette
 	@PostMapping(value = "/saveCassette")
 	public ResponseEntity<ResponseStructure<Cassette>> addCassettes(@RequestBody Cassette cassette) {
-		return cassetteService.addCassettes(cassette);
+        
+		Cassette data = cassetteService.addCassettes(cassette);
+		
+		ResponseStructure<Cassette> structure = new ResponseStructure<>();
+
+		structure.setData(data);
+		structure.setMessage("Cassette Added Sucessfully");
+		structure.setStatusCode(HttpStatus.CREATED.value());
+		
+		return new ResponseEntity<ResponseStructure<Cassette>>(structure, HttpStatus.CREATED);
 	}
 	
 	@PostMapping(value = "/uploadImage", consumes = "multipart/form-data")

@@ -56,18 +56,11 @@ public class CassetteService {
         return user;
 	}
 	
-	public ResponseEntity<ResponseStructure<Cassette>> addCassettes(Cassette cassette){
+	public Cassette addCassettes(Cassette cassette){
         User user = getCurrentUser();
+        cassette.setUser(user);
         
-		cassette.setUser(user);
-		
-		ResponseStructure<Cassette> structure = new ResponseStructure<>();
-
-		structure.setData(cassetteDAO.addCassette(cassette));
-		structure.setMessage("Cassette Added Sucessfully");
-		structure.setStatusCode(HttpStatus.CREATED.value());
-		
-		return new ResponseEntity<ResponseStructure<Cassette>>(structure, HttpStatus.CREATED);
+		return cassetteDAO.addCassette(cassette);
 	}
 	
 	public ResponseEntity<ResponseStructure<String>> uploadCoverImage(@RequestParam("file") MultipartFile file){

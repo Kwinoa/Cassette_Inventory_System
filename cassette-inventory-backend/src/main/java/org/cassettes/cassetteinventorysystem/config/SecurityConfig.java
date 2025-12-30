@@ -37,8 +37,8 @@ public class SecurityConfig implements WebMvcConfigurer {
 	    http
 	        .cors(cors -> cors.configurationSource(request -> {
 	            CorsConfiguration config = new CorsConfiguration();
-	            config.setAllowedOrigins(List.of("http://localhost:3000"));
-	            config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+	            config.setAllowedOrigins(List.of("http://127.0.0.1:3000"));
+	            config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
 	            config.setAllowedHeaders(List.of("*")); // Added for completeness
 	            config.setAllowCredentials(true);
 	            return config;
@@ -49,10 +49,12 @@ public class SecurityConfig implements WebMvcConfigurer {
 	            .securityContextRepository(new HttpSessionSecurityContextRepository())
 	        )
 	        .sessionManagement(session ->
-	            session.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED))
+	            session.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
+	            .sessionConcurrency(concurrency -> concurrency.maximumSessions(3))
+	            .invalidSessionUrl("/logout"))
 	        .authorizeHttpRequests(auth -> auth
 	        	.requestMatchers(org.springframework.http.HttpMethod.OPTIONS, "/**").permitAll()
-	            .requestMatchers("/api/auth/login", "/api/auth/register", "/search", "/public/media/**").permitAll()
+	            .requestMatchers("/api/login", "/api/logout", "/api/register", "/search", "/public/media/**").permitAll()
 	            .anyRequest().authenticated()
 	        )
 	        .exceptionHandling(ex -> ex

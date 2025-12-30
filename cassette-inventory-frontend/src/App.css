@@ -20,6 +20,18 @@ body {
     font-style: normal;
 }
 
+h1, h2, h3 {
+    color: rgba(67, 66, 66, 0.9);
+}
+
+p, button {
+    color: rgba(67, 66, 66, 0.85);
+}
+
+button:hover {
+    opacity: 0.65;
+}
+
 li {
     list-style-type: none;
 }
