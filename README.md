@@ -87,3 +87,115 @@ The final application is a specialized tool that combines the nostalgia of physi
 - Gained expertise in React 19’s new features and advanced Context API patterns for global state.
 - Improved backend security through Spring Security and session-based authentication.
 
+## API Endpoints
+
+This section details the RESTful API endpoints provided by the Spring Boot backend.
+
+### Authentication API (`/api`)
+
+Handles user registration, login, and session management.
+
+| Method   | Path             | Description                               |
+| :------- | :--------------- | :---------------------------------------- |
+| `POST`   | `/api/register`  | Registers a new user.                     |
+| `POST`   | `/api/login`     | Authenticates a user and creates a session. |
+| `POST`   | `/api/logout`    | Logs out the current user.                |
+| `GET`    | `/api/getSelf`   | Retrieves the currently authenticated user. |
+
+**Example `POST /api/register` Request Body:**
+```json
+{
+    "email": "test@example.com",
+    "password": "password123",
+    "firstName": "Test",
+    "lastName": "User"
+}
+```
+
+**Example `POST /api/login` Request Body:**
+```json
+{
+    "email": "test@example.com",
+    "password": "password123"
+}
+```
+
+### Cassette API
+
+Manages the user's cassette collection.
+
+| Method   | Path                  | Description                               |
+| :------- | :-------------------- | :---------------------------------------- |
+| `POST`   | `/saveCassette`       | Adds a new cassette to the collection.    |
+| `POST`   | `/uploadImage`        | Uploads a cover image for a cassette.     |
+| `GET`    | `/getUserCassettes`   | Retrieves all cassettes for the authenticated user. |
+| `GET`    | `/cassette/{id}`      | Retrieves a specific cassette by its ID.  |
+| `PUT`    | `/cassette/{id}`      | Updates a specific cassette by its ID.    |
+| `DELETE` | `/delete/{id}`        | Deletes a specific cassette by its ID.    |
+
+**Example `POST /saveCassette` Request Body:**
+```json
+{
+    "title": "Fake Plastic Trees",
+    "artist": "beabadoobee",
+    "year": "2020",
+    "genre": "Rock",
+    "style": "Indie Rock",
+    "coverImage": "path/to/image.jpg"
+}
+```
+
+### Discogs API (`/search`)
+
+Searches for album information on Discogs.
+
+| Method   | Path              | Description                               |
+| :------- | :---------------- | :---------------------------------------- |
+| `GET`    | `/search`         | Searches for a list of albums on Discogs. |
+| `GET`    | `/search/album`   | Searches for a single album on Discogs.   |
+| `GET`    | `/search/master`  | Searches for a master release on Discogs. |
+
+**Example `GET /search?query=...` Request:**
+```
+GET /search?query=Beatopia
+```
+
+### OpenAI API (`/smartSearch`)
+
+Provides AI-powered cassette recommendations.
+
+| Method   | Path            | Description                               |
+| :------- | :-------------- | :---------------------------------------- |
+| `GET`    | `/smartSearch`  | Gets cassette recommendations based on the user's collection. |
+
+### Spotify API (`/spotify`)
+
+Integrates with the Spotify API for playback and control.
+
+| Method   | Path                            | Description                               |
+| :------- | :------------------------------ | :---------------------------------------- |
+| `POST`   | `/spotify/callback`             | Handles the Spotify OAuth callback.       |
+| `POST`   | `/spotify/callback/refresh`     | Refreshes the Spotify access token.       |
+| `PUT`    | `/spotify/transfer`             | Transfers playback to a different device. |
+| `POST`   | `/spotify/setUri`               | Sets the Spotify URI for a cassette.      |
+| `PUT`    | `/spotify/changeAlbum/{deviceId}`| Changes the currently playing album.      |
+| `POST`   | `/spotify/shuffleOff/{deviceId}`| Turns off shuffle mode.                   |
+
+### Statistics API (`/dashboard`)
+
+Retrieves statistics about the user's collection.
+
+| Method   | Path          | Description                               |
+| :------- | :------------ | :---------------------------------------- |
+| `GET`    | `/dashboard`  | Gets dashboard statistics for the user's collection. |
+
+### User API
+
+Manages user-specific data.
+
+| Method   | Path                  | Description                               |
+| :------- | :-------------------- | :---------------------------------------- |
+| `PATCH`  | `/updateRefreshToken` | Updates the user's Spotify refresh token. |
+| `GET`    | `/checkRefreshToken`  | Checks if the user has a Spotify refresh token. |
+| `DELETE` | `/deleteUser`         | Deletes the authenticated user's account. |
+
