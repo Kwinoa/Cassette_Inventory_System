@@ -64,20 +64,22 @@ const LoginComponent = () => {
         if (validateForm()) {
             const formData = { email, password};
             login(formData).then((response) => {
-                if(response.status == 200){
+                console.log(response);
+                if(response.data.message.includes("Invalid email or password")){
+                    const errorsCopy = { ...errors };
+                    errorsCopy.email = 'Invalid email or password';
+                    setErrors(errorsCopy);
+                }else if(response.data.message.includes("Unauthorized")){
+                    const errorsCopy = { ...errors };
+                    errorsCopy.email = 'Unauthorized';
+                    setErrors(errorsCopy);
+                }else if(response.status == 200 && response.data.message.includes('Successfully')){
                     setFirstName(response.data.data.firstName);
-                    sessionStorage.setItem("firstName", JSON.stringify(response.data.data.firstName));
-                    console.log("First Name:", response.data.data.firstName);
                     setLastName(response.data.data.lastName);
                     setOfficialEmail(response.data.data.email);
-                    console.log(response)
                     setIsLoggedIn(true);
-                    sessionStorage.setItem("isLoggedIn", true);
-
                     navigator("/");
                 }
-            }).catch(error => {
-                console.log(error);
             })
         }
     }

@@ -135,7 +135,7 @@ public class SpotifyService {
     	return webClient.get()
     			.uri(uriBuilder -> uriBuilder
     			.path("/search")
-    			.queryParam("q", artist + " " + album)
+    			.queryParam("q", "artist:\"" + artist + "\" album:\"" + album + "\"")
     			.queryParam("type", "album")
     			.queryParam("market", "US")
     			.queryParam("limit", "1")
@@ -161,10 +161,30 @@ public class SpotifyService {
         			.bodyToMono(new ParameterizedTypeReference<Map<String, Object>>(){})
         			.timeout(Duration.ofSeconds(5))
         			.block();
-        	}catch (WebClientResponseException e) {
-        		System.out.println("Spotify rejected the request: " + e.getResponseBodyAsString());
-        		throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "");
-        	}
+    	}catch (WebClientResponseException e) {
+    		System.out.println("Spotify rejected the request: " + e.getResponseBodyAsString());
+    		
+//    		User user = getCurrentUser();
+//        	String refreshToken = user.getSpotifyRefreshToken();
+//        	String newAccessToken = accessToken;
+//        	
+//            Map<String, Object> tokenData = getSpotifyTokenUsingRefresh(refreshToken);
+//            if(tokenData != null && tokenData.containsKey("refresh_token")) {
+//            	String newRefreshToken = (String) tokenData.get("refresh_token");
+//                user.setSpotifyRefreshToken(newRefreshToken);
+//                userRepository.save(user); // Persistence!
+//                newAccessToken = (String) tokenData.get("access_token");
+//            }
+//    		
+//    		Map<String, Object> request = new HashMap<>();
+//    		String[] devices = new String[1];
+//    		devices[0] = deviceId;
+//    		request.put("device_ids", devices);
+//    		request.put("play", false);
+//    		transferPlayback(newAccessToken, request);
+    		
+    		throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "");
+    	}
     }
     
     public void setShuffleOff(String accessToken, String deviceId) {
@@ -226,11 +246,11 @@ public class SpotifyService {
 	    	response.forEach((key, value) -> System.out.println("RESPONSE: " +  key + ": " + value));
 	    	Map<String, Object> albums = (Map<String, Object>) response.get("albums");
 	    	if((Integer) albums.get("total") == 0) {
-	    		cassette.setAlbumUri("0");
+	    		cassette.setAlbum_uri("0");
 	    		cassetteRepository.save(cassette);
 	    		
 	    		structure.setStatusCode(HttpStatus.OK.value());
-	    		structure.setMessage("Spotify Album Uri Not Found");
+	    		structure.setMessage("Spotify Album Uri Search Not Found");
 	    		structure.setData(cassette);
 	    		
 	    		return new ResponseEntity<>(structure, HttpStatus.OK);
@@ -246,7 +266,7 @@ public class SpotifyService {
 	    		
 //	    	if(cassette.getTrack_List().size() == (Integer)albumInfo.get("total_tracks")) {
 	    		System.out.println("ALBUM URI: " + uriList[2]);
-	    		cassette.setAlbumUri(uri);
+	    		cassette.setAlbum_uri(uri);
 	    		cassetteRepository.save(cassette);
 //	    	}
 	    		
@@ -292,8 +312,6 @@ public class SpotifyService {
     public ResponseEntity<ResponseStructure<Map<String, Object>>> processSpotifyTokenUsingRefresh(){
     	User user = getCurrentUser();
     	String refreshToken = user.getSpotifyRefreshToken();
-    	System.out.println("SPOTIFY TOKEN --------------");
-    	System.out.println(refreshToken);
 
         Map<String, Object> tokenData = getSpotifyTokenUsingRefresh(refreshToken);
         ResponseStructure<Map<String, Object>> structure = new ResponseStructure<>();
@@ -330,7 +348,7 @@ public class SpotifyService {
 
         ResponseStructure<String> structure = new ResponseStructure<>();
         structure.setStatusCode(HttpStatus.OK.value());
-        structure.setMessage("Spotify Playback Successfully Paused");
+        structure.setMessage("Spotify Playback Shuffle Successfully Turned Off");
         structure.setData("");
 
         return new ResponseEntity<>(structure, HttpStatus.OK);

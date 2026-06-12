@@ -20,11 +20,17 @@ public class DiscogsService {
 	
 	// Modern replacement for RestTemplate
 	private WebClient webClient;
+	private WebClient webClientTitle;
 	
 	// Spring Boot automatically provides a pre-configured builder WebClient.Builder
 	public DiscogsService(WebClient.Builder webClientBuilder) {
 		this.webClient = webClientBuilder
 				.baseUrl("https://api.discogs.com")
+				.defaultHeader("User-Agent", "CassetteApp/1.0 +@:Kalinathi86@gmail.com") // Adds a user-agent identifier for data collecting purposes for Discogs
+				.defaultHeader("Authorization", "Discogs token=MwkNixSbqEgQPzJbxCxboHRjobZduKYEBznPCAKH") // Sets our personal token
+				.build(); // finishes constructing the url
+		this.webClientTitle = webClientBuilder
+				.baseUrl("")
 				.defaultHeader("User-Agent", "CassetteApp/1.0 +@:Kalinathi86@gmail.com") // Adds a user-agent identifier for data collecting purposes for Discogs
 				.defaultHeader("Authorization", "Discogs token=MwkNixSbqEgQPzJbxCxboHRjobZduKYEBznPCAKH") // Sets our personal token
 				.build(); // finishes constructing the url
@@ -56,6 +62,34 @@ public class DiscogsService {
 				.block();	
 	}
 	
+	public String searchTitle(String resourceUrl) {
+		return webClientTitle.get()
+				.uri(resourceUrl)
+				.retrieve()
+				.bodyToMono(String.class)
+				.block();
+	}
+	
+	public Cassette getCassetteTitle(Cassette cassette) {
+		String response = searchTitle(cassette.getResource_url());
+		ObjectMapper mapper = new ObjectMapper();
+		
+		try {
+			JsonNode root = mapper.readTree(response);
+			String title = root.path("title").asText();
+			JsonNode artist = root.path("artists").get(0);
+			String name = artist.path("name").asText();
+			System.out.println("NAME: " + name);
+			
+			cassette.setTitle(title);
+			cassette.setName(name);
+			return cassette;
+		} catch(Exception e){
+			System.out.println(e);
+		}
+		return cassette;
+	}
+	
 	// Use jackson to parse JSON string to object
 	public List<Cassette> extractCassetteInfo(String response){
 		ObjectMapper mapper = new ObjectMapper();
@@ -66,6 +100,7 @@ public class DiscogsService {
 			for(JsonNode cassetteJson : results) {
 				
 				String masterId = cassetteJson.path("master_id").asText();
+				String resourceUrl = cassetteJson.path("resource_url").asText();
 				
 				if(Integer.parseInt(masterId) != 0 && !cassettes.containsKey(masterId)) {
 				JsonNode master = mapper.readTree(searchMaster(masterId));
@@ -77,6 +112,8 @@ public class DiscogsService {
 				cassette.setFormat("cassette");
 				cassette.setCover_image(cover_image.path("resource_url").asText());
 				cassette.setDate(LocalDate.now());
+				cassette.setResource_url(resourceUrl);
+				cassette.setTrack_list_size(master.path("track_list_size").asInt());
 				
 				JsonNode tracks = master.path("tracklist");
 				List<String> track_list = new ArrayList<String>();
@@ -84,7 +121,8 @@ public class DiscogsService {
 					String newTrack = track.path("position").asText() + " " + track.path("title").asText();
 					track_list.add(newTrack);
 				}
-				cassette.setTrack_List(track_list);
+				cassette.setTrack_list(track_list);
+				cassette.setTrack_list_size(track_list.size());
 				
 				JsonNode genre = master.path("genres");
 				List<String> genres = new ArrayList<>();

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useContext } from 'react'
 import styles from './Edit.module.css'
-import { saveCassette, updateCassette, getCassetteById, deleteCassetteById, uploadImage } from '../../services/CassetteService'
+import { saveCassette, updateCassette, getCassetteById, deleteCassetteById, uploadImage, getUserCassettes } from '../../services/CassetteService'
 import { genreSet, styleSet } from './GenreAndStyleSet'
 import Select from 'react-select'
 import { useNavigate, useParams } from 'react-router-dom'
@@ -11,18 +11,23 @@ import {AuthContext} from "../AuthContext/AuthContext"
 
 const EditComponent = () => {
 
-    const {loggedIn} = useContext(AuthContext);
+    const {isLoggedIn, officialEmail} = useContext(AuthContext);
     const { id } = useParams();
     const [cover_image, setCoverImage] = useState('');
     const [coverImageFile, setCoverImageFile] = useState(null);
-    const BASE_URL = "http://127.0.0.1:8080";
+    const apiUrl = import.meta.env.VITE_CASSETTE_API_URL;
+    const BASE_URL = apiUrl;
     const [title, setTitle] = useState('');
+    const [name, setName] = useState('');
     const [year, setYear] = useState('');
     const [genre, setGenre] = useState([]);
     const [style, setStyle] = useState([]);
     const [date, setDate] = useState('');
+    const [album_uri, setAlbumUri] = useState('');
+    const [resource_url, setResourceUrl] = useState('');
+    const [track_list_size, setTrackListSize] = useState(0);
     const format = "Cassette";
-    const track_list = ["track1", "track2", "track3"]
+    const [track_list, setTrackList] = useState([]);
 
     const [submitted, setSubmitted] = useState(false);
 
@@ -30,10 +35,11 @@ const EditComponent = () => {
         loggedIn: '',
         cover_image: '',
         title: '',
+        name: '',
         year: '',
         genre: '',
         style: '',
-        date: ''
+        date: '',
     })
 
     function validateForm() {
@@ -41,36 +47,49 @@ const EditComponent = () => {
 
         const errorsCopy = { ...errors };
 
-        if(!loggedIn){
-            errorsCopy.loggedIn = 'Login is required to modify cassettes';
+        if(!isLoggedIn){
+            errorsCopy.isLoggedIn = 'Login is required to modify cassettes';
         }
+
         if (cover_image) {
             errorsCopy.cover_image = '';
         }
+
         if (title.trim()) {
             errorsCopy.title = '';
         } else {
             errorsCopy.title = 'Title is required';
             valid = false;
         }
+
+        if (name.trim()) {
+            errorsCopy.name = '';
+        } else {
+            errorsCopy.name = 'Name is required';
+            valid = false;
+        }
+
         if (year) {
             errorsCopy.year = '';
         } else {
             errorsCopy.year = 'Year is required';
             valid = false;
         }
+
         if (genre) {
             errorsCopy.genre = '';
         } else {
             errorsCopy.genre = 'Genre is required';
             valid = false;
         }
+
         if (style) {
             errorsCopy.style = '';
         } else {
             errorsCopy.style = 'Year is required';
             valid = false;
         }
+
         if (date.trim()) {
             errorsCopy.date = '';
         } else {
@@ -96,16 +115,39 @@ const EditComponent = () => {
         }
     }
 
+    async function fetchData(){
+        try {
+            const response = await getUserCassettes();
+            const data = response.data.data;
+            // TODO: need to hash email to not expose & for security
+            const cassetteCache = {
+                email: officialEmail,
+                data: data
+            }
+                        
+            sessionStorage.setItem('cassette_cache', JSON.stringify(cassetteCache));
+            console.log("cache updated");
+        } catch (error) {
+            console.error("Fetch failed", error);
+        }
+    }
+
     useEffect(() => {
         if (id) {
             getCassetteById(id).then((response) => {
                 const data = response.data.data;
+                console.log(data);
                 setCoverImage(data.cover_image);
                 setTitle(data.title);
+                setName(data.name);
                 setYear(data.year);
                 setDate(data.date);
                 setGenre(data.genre)
                 setStyle(data.style);
+                setAlbumUri(data.album_uri);
+                setResourceUrl(data.resource_url);
+                setTrackList(data.track_list);
+                setTrackListSize(data.track_list_size);
             }).catch(error => {
                 console.error(error);
             })
@@ -121,22 +163,22 @@ const EditComponent = () => {
             if (coverImageFile instanceof File) {
                 const uploadedPath = await uploadCoverImage(coverImageFile)
                 if(uploadedPath){
-                    finalPath = uploadedPath;
+                    finalPath = BASE_URL + uploadedPath;
                 }
             }
 
             if (id) {
-                const cassette = {cover_image: BASE_URL + finalPath, title, year, genre, style, date, format, track_list};
+                const cassette = {cover_image: finalPath, title, name, year, genre, style, date, format, track_list, album_uri, resource_url, track_list_size};
                 updateCassette(cassette, id).then((response) => {
-                console.log(response.data);
+                fetchData();
                 navigator('/');
                 }).catch(error => {
                     console.log(error);
                 })
             } else {
-                const cassette = {cover_image: finalPath, title, year, genre, style, date, format, track_list};
+                const cassette = {cover_image: finalPath, title, year, name, genre, style, date, format, track_list, album_uri, resource_url, track_list_size};
                 saveCassette(cassette).then((response) => {
-                console.log(response.data);
+                fetchData();
                 navigator('/');
                 }).catch(error => {
                     console.log(error);
@@ -149,6 +191,7 @@ const EditComponent = () => {
         e.preventDefault();
         deleteCassetteById(id).then((response) => {
             console.log(response.data.data);
+            fetchData();
             navigator('/');
         }).catch(error => {
             console.log(error);
@@ -172,8 +215,14 @@ const EditComponent = () => {
                 <FileUploaderComponent key={id} cover_image={cover_image} setCoverImage={setCoverImage} setCoverImageFile={setCoverImageFile} submitted={submitted} />
                 <div>
                     <div>
-                        <label className={styles.edit_label} htmlFor="title">Author & Title<em className={styles.required}>*</em></label>
-                        <input className={`${styles.edit_input} form-control ${errors.date ? `is-invalid` : ``}`} id={title} type='text' placeholder='Artist - Title' name='title' value={title} onChange={(e) => {
+                        <label className={styles.edit_label} htmlFor="artist">Artist<em className={styles.required}>*</em></label>
+                        <input className={`${styles.edit_input} form-control ${errors.name ? `is-invalid` : ``}`} id={name} type='text' placeholder='Artist' name='name' value={name} onChange={(e) => {
+                            setName(e.target.value);
+                        }}></input>
+                    </div>
+                    <div>
+                        <label className={styles.edit_label} htmlFor="title">Title<em className={styles.required}>*</em></label>
+                        <input className={`${styles.edit_input} form-control ${errors.title ? `is-invalid` : ``}`} id={title} type='text' placeholder='Title' name='title' value={title} onChange={(e) => {
                             setTitle(e.target.value);
                         }}></input>
                         {errors.title && <div className={styles.invalid_message}>{errors.title}</div>}
@@ -237,7 +286,7 @@ const EditComponent = () => {
                         <button className={styles.submit_button} onClick={addCassette}>Submit</button>
                         <button className={styles.delete_button} onClick={deleteCassette}>Delete</button>
                     </div>
-                    {errors.loggedIn && <div className={styles.invalid_message}>{errors.loggedIn}</div>}
+                    {errors.isLoggedIn && <div className={styles.invalid_message}>{errors.isLoggedIn}</div>}
                 </div>
             </form>
         </div>

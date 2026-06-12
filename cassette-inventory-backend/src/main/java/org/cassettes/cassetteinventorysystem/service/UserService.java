@@ -40,8 +40,6 @@ public class UserService {
 		}
         String email = auth.getName();
         User user = userRepository.findByEmail(email);
-        System.out.println("=============================");
-        System.out.println("USER: " + email);
         if(user == null) {
 			throw new RuntimeException("User Cassettes Could Not Be Found");
 		}

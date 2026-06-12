@@ -19,7 +19,6 @@ public class WebClientConfig {
         // Create a connection provider that cleans up idle connections
         ConnectionProvider provider = ConnectionProvider.builder("spotifyPool")
                 .maxIdleTime(Duration.ofSeconds(20)) // Close connections idle for > 20s
-                .maxLifeTime(Duration.ofMinutes(2))  // Total life of a connection
                 .pendingAcquireTimeout(Duration.ofSeconds(60))
                 .evictInBackground(Duration.ofSeconds(120))
                 .build();

@@ -107,15 +107,11 @@ const RegisterComponent = () => {
         e.preventDefault();
         if (validateForm()) {
             const formData = { email, password, firstName, lastName};
-            console.log(formData);
             register(formData).then((response) => {
-                console.log(response.data);
-                if(response.status == 200)
-                    navigator("/login");
+                navigator("/login");
             }).catch(error => {
                 if(error.response && error.response.data){
                     const message = error.response.data
-                    console.log(message);
                     if(message.includes("Email")){
                         let errorsCopy = {...errors};
                         errorsCopy.email = message;

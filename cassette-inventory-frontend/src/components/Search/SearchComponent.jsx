@@ -9,10 +9,10 @@ const SearchComponent = ({ smart }) => {
     const [searchParams] = useSearchParams();
     const query = searchParams.get("query");
     const [loading, setLoading] = useState(true);
+    const [limitReached, setLimitReached] = useState(false);
 
     // Get the CassetteService API response and store it into cassettes list
     useEffect(() => {
-        console.log("Effect running", query, smart);
         setLoading(true);
         const getResults = async () => {
             try {
@@ -22,8 +22,12 @@ const SearchComponent = ({ smart }) => {
                         response = await searchSongs(query);
                     } else {
                         response = await searchSmart();
+                        const message = response.data.message;
+                        if(message.includes("Smart Search Limit")){
+                            setLimitReached(true);
+                        }
                     }
-                    console.log(response.data.data);
+                    console.log(response);
                     setCassettes(response.data.data);
                 }else{
                     setCassettes([]);
@@ -43,6 +47,8 @@ const SearchComponent = ({ smart }) => {
             return <p>Loading results...</p>
         } else if (!loading && cassettes.length === 0) {
             return <p>No results found</p>
+        } else if (!loading && limitReached){
+            return <p>Smart search limit reached</p>
         }
     }
     return (

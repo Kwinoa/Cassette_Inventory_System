@@ -4,14 +4,20 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import org.cassettes.cassetteinventorysystem.dao.CassetteDAO;
 import org.cassettes.cassetteinventorysystem.entity.Cassette;
+import org.cassettes.cassetteinventorysystem.entity.Month;
 import org.cassettes.cassetteinventorysystem.entity.ResponseStructure;
 import org.cassettes.cassetteinventorysystem.entity.User;
 import org.cassettes.cassetteinventorysystem.repository.UserRepository;
@@ -36,6 +42,9 @@ public class CassetteService {
 	private CassetteDAO cassetteDAO;
 	
 	@Autowired 
+	private DiscogsService discogsService;
+	
+	@Autowired 
 	private UserRepository userRepository;
 	
 	@Value("${media.upload.path}")
@@ -48,8 +57,7 @@ public class CassetteService {
 		}
         String email = auth.getName();
         User user = userRepository.findByEmail(email);
-        System.out.println("=============================");
-        System.out.println("USER: " + email);
+
         if(user == null) {
 			throw new RuntimeException("User Cassettes Could Not Be Found");
 		}
@@ -57,10 +65,22 @@ public class CassetteService {
 	}
 	
 	public Cassette addCassettes(Cassette cassette){
+		Cassette cassetteWithName = discogsService.getCassetteTitle(cassette);
+		
         User user = getCurrentUser();
-        cassette.setUser(user);
+        cassetteWithName.setUser(user);
         
-		return cassetteDAO.addCassette(cassette);
+        int monthNum = LocalDate.now().getMonthValue();
+        List<Month> month_data = user.getMonth_list();
+        for(Month m : month_data) {
+        	if(m.getMonth() == monthNum) {
+        		m.setCassette_count(m.getCassette_count() + 1);
+        		System.out.println("Incrementing value for month: " + monthNum);
+        	}
+        }
+        user.setMonth_list(month_data);
+        
+		return cassetteDAO.addCassette(cassetteWithName);
 	}
 	
 	public ResponseEntity<ResponseStructure<String>> uploadCoverImage(@RequestParam("file") MultipartFile file){
@@ -98,26 +118,14 @@ public class CassetteService {
         }
     }
 	
-	
-//	public ResponseEntity<ResponseStructure<List<Cassette>>> getAllCassettes(){
-//		ResponseStructure<List<Cassette>> structure = new ResponseStructure<>();
-//		List<Cassette> cassettes = cassetteDAO.getAllCassettes();
-//		
-//		if(!cassettes.isEmpty()) {
-//			structure.setData(cassettes);
-//			structure.setMessage("Cassettes Found");
-//			structure.setStatusCode(HttpStatus.OK.value());
-//			
-//			return new ResponseEntity<ResponseStructure<List<Cassette>>>(structure, HttpStatus.OK);
-//		}
-//		throw new RuntimeException("Cassettes Could Not Found");
-//	}
-	
 	public ResponseEntity<ResponseStructure<List<Cassette>>> getUserCassettes(){
         User user = getCurrentUser();
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        System.out.println("AUTH CLASS = " + auth.getClass());
-        System.out.println("AUTH NAME  = " + auth.getName());
+        
+        if(auth == null || !auth.isAuthenticated()) {
+			throw new RuntimeException("Not Authenticated");
+		}
+
 		ResponseStructure<List<Cassette>> structure = new ResponseStructure<>();
 		
 		List<Cassette> cassettes = cassetteDAO.getCassettesByUserId(user.getId());;
@@ -129,7 +137,14 @@ public class CassetteService {
 			
 			return new ResponseEntity<ResponseStructure<List<Cassette>>>(structure, HttpStatus.OK);
 		}
-		throw new RuntimeException("User Cassettes Could Not Found");
+		else {
+			structure.setData(cassettes);
+			structure.setMessage("User Cassetttes Not Found");
+			structure.setStatusCode(HttpStatus.OK.value());
+			
+			return new ResponseEntity<ResponseStructure<List<Cassette>>>(structure, HttpStatus.OK);
+
+		}
 	}
 	
 	public ResponseEntity<ResponseStructure<Cassette>> getCassetteById(Long id){
@@ -150,13 +165,32 @@ public class CassetteService {
 	public ResponseEntity<ResponseStructure<Cassette>> updateCassetteById(Cassette cassette, Long id){
         User user = getCurrentUser();
         
-        Cassette original = cassetteDAO.getCassetteByIdAndUserId(id, user.getId());        
+        Cassette original = cassetteDAO.getCassetteByIdAndUserId(id, user.getId()); 
+        
+        if(original.getDate() != cassette.getDate()) {
+        	int oldMonthNum = original.getDate().getMonthValue();
+        	int newMonthNum = cassette.getDate().getMonthValue();
+        	List<Month> month_data = user.getMonth_list();
+        	for(Month m : month_data) {
+        		if(m.getMonth() == newMonthNum) {
+        			m.setCassette_count(m.getCassette_count() + 1);
+        		}
+        		if(m.getMonth() == oldMonthNum) {
+        			m.setCassette_count(m.getCassette_count() - 1);
+        		}
+        	} 
+            user.setMonth_list(month_data);
+        }
+        
 		original.setTitle(cassette.getTitle());
 		original.setDate(cassette.getDate());
 		original.setGenre(cassette.getGenre());
 		original.setStyle(cassette.getStyle());
 		original.setYear(cassette.getYear());
 		original.setCover_image(cassette.getCover_image());
+		original.setResource_url(cassette.getResource_url());
+		original.setTrack_list_size(cassette.getTrack_list_size());
+		
 		
 		ResponseStructure<Cassette> structure = new ResponseStructure<>();
 		Cassette updatedCassette = cassetteDAO.updateCassette(original);
@@ -176,8 +210,19 @@ public class CassetteService {
 		
 		ResponseStructure<String> structure = new ResponseStructure<>();
 		
+		Cassette cassette = cassetteDAO.getCassetteByIdAndUserId(id, user.getId());
+		
 		boolean exists = cassetteDAO.deleteByIdAndUserId(id, user.getId());
 		if(exists) {
+			int monthNum = cassette.getDate().getMonthValue();
+			List<Month> month_data = user.getMonth_list();
+			for(Month m : month_data) {
+				if(m.getMonth() == monthNum) {
+					m.setCassette_count(m.getCassette_count() - 1);
+				}
+			}
+	        user.setMonth_list(month_data);
+
 			structure.setData("Delete Successfully");
 			structure.setMessage("Cassette with id: " + id + "Deleted Successfully");
 			structure.setStatusCode(HttpStatus.NO_CONTENT.value());
@@ -233,5 +278,77 @@ public class CassetteService {
         }
 
         return stylesCount;
+    }
+    
+    public Map<String, Object> getStatsForUser() {
+    	User user = getCurrentUser();
+        List<Cassette> userTapes = getUserCassettes().getBody().getData();
+        Map<String, Object> stats = new HashMap<>();
+        
+        // Month distribution of cassettes
+        stats.put("monthDistribution", user.getMonth_list());
+
+        // Total Count
+        stats.put("totalCassettes", userTapes.size());
+        
+        // Years Joined
+        LocalDate today = LocalDate.now();
+        LocalDate joinDate = user.getJoinDate();
+        int years = today.getYear() - joinDate.getYear();
+        float months = (float) (((float)today.getMonthValue() -  (float)joinDate.getMonthValue())/12.0);
+        System.out.print("join month: " + joinDate.getMonthValue() + "calculated months: " + months);
+        System.out.println("years: " + years + " months: " + months);
+        stats.put("yearsSinceJoined", years + months);
+        if(!userTapes.isEmpty()) {
+	
+	    	// Genre Distribution (Counting occurrences in the List<String> genre)
+	        Map<String, Long> genreDist = userTapes.stream()
+	                .flatMap(c -> c.getGenre().stream())
+	                .collect(Collectors.groupingBy(Function.identity(), Collectors.counting()));
+	        stats.put("genreDistribution", genreDist);
+	        
+	        // Style Distribution
+	        Map<String, Long> styleDist = userTapes.stream()
+	                .flatMap(c -> c.getStyle().stream())
+	                .collect(Collectors.groupingBy(Function.identity(), Collectors.counting()));
+	        stats.put("styleDistribution", styleDist);
+	        
+	        // Largest Cassette
+	        Optional<Cassette> biggestTape = userTapes.stream()
+	        		.max(Comparator.comparingInt(Cassette::getTrack_list_size));
+	        stats.put("largestCassette", biggestTape.get().getTitle());
+     
+        }else {
+        	Map<String, Long> empty = new HashMap<String, Long>();
+        	empty.put("No Data", (long) 1);
+        	stats.put("genreDistribution", empty);
+        	stats.put("styleDistribution", empty);
+        	stats.put("largestCassette", "N/A");
+        }
+        
+        // Favorite Artist (The "name" field in your entity)
+        String favArtist = userTapes.stream()
+                .collect(Collectors.groupingBy(Cassette::getName, Collectors.counting()))
+                .entrySet().stream()
+                .max(Map.Entry.comparingByValue())
+                .map(Map.Entry::getKey)
+                .orElse("N/A");
+        stats.put("favoriteArtist", favArtist);
+        
+        // Favorite Decade
+        Map<String, Long> decadeDist = userTapes.stream()
+            .collect(Collectors.groupingBy(
+                c -> (c.getYear() / 10 * 10) + "s", 
+                Collectors.counting()
+            ));
+        
+        String favDecade = decadeDist.entrySet().stream()
+            .max(Map.Entry.comparingByValue())
+            .map(Map.Entry::getKey)
+            .orElse("N/A");
+        
+        stats.put("favoriteDecade", favDecade);
+	        
+        return stats;
     }
 }

@@ -14,22 +14,23 @@ const SpotifyPlayerComponent = () => {
     const [deviceId, setDeviceId] = useState('');
 
     const [trackList, setTrackList] = useState([]);
-    const [playedSongs, setPlayedSongs] = useState([]);
     const [foundCassette, setFoundCassette] = useState({cover_image: ""});
     const [coverImage, setCoverImage] = useState("");
     const playerRef = useRef(null);
     const prevTrackUri = useRef(null);
     const tokenRef = useRef(accessToken);
+    const refreshRef = useRef(false);
 
     const navigate = useNavigate();
     const hasCalled = useRef(false); // Prevents React StrictMode from running this twice
+    const [spotifyTimedOut, setSpotifyTimedOut] = useState(false);
 
     useEffect(() => { 
         tokenRef.current = accessToken; 
     }, [accessToken]);
 
     useEffect(() => {
-        console.log(deviceId);
+        setSpotifyTimedOut(false);
 
         const token = sessionStorage.getItem("access_token");
         if(token && !accessToken){
@@ -49,11 +50,11 @@ const SpotifyPlayerComponent = () => {
 
         if(albumToPlay){
             if(cassettes){
-                const found = cassettes?.find(c => c.title == albumToPlay.label);
+                const found = cassettes?.find(c => (c.name + " - " + c.title) == albumToPlay.label);
                 console.log("Found Cassette:", found.cover_image);
                 if(found){
                     setFoundCassette(cassettes?.find(c => c.title == albumToPlay.label));
-                    const trackList = found.track_List || [];
+                    const trackList = found.track_list || [];
                     setTrackList(trackList);
                 }
             }
@@ -71,9 +72,9 @@ const SpotifyPlayerComponent = () => {
                 const cassetteCache = cassetteData.data;
 
                 if(Array.isArray(cassetteCache)){
-                    const titles = cassetteCache.filter(c => (c.albumUri !== "0" && c.albumUri !== null)).map(c => ({
-                        value: c.albumUri,
-                        label: c.title
+                    const titles = cassetteCache.filter(c => (c.album_uri !== 0 && c.album_uri !== null)).map(c => ({
+                        value: c.album_uri,
+                        label: c.name + " - " + c.title
                     }));
                     setCassetteSet(titles);
                 }
@@ -109,12 +110,22 @@ const SpotifyPlayerComponent = () => {
                 console.log('Ready with Device ID', device_id);
                 sessionStorage.setItem("device_id", device_id);
                 setDeviceId(device_id);
+                refreshAccessToken();
 
                 setIsPlaying(false);
                 setSpotifyShuffleOff(token, device_id).then((response) => {
                     console.log(response.data);
+                }).catch(error => {
+                    console.log(error);
+                    setSpotifyTimedOut(true);
                 });
-                transferPlayback(device_id, token);
+                transferPlayback(device_id, token).then((response) => {
+                    console.log(response.data);
+                }).catch(error => {
+                    console.log(error);
+                    setSpotifyTimedOut(true);
+                });
+            
             });
 
             player.addListener('not_ready', ({ device_id }) => {
@@ -128,7 +139,6 @@ const SpotifyPlayerComponent = () => {
                 }
 
                 setIsPlaying(!state.paused);
-                console.log("Paused?:", state.paused)
 
                 const currentTrack = state.track_window.current_track;
                 const currentUri = currentTrack.uri;
@@ -138,10 +148,8 @@ const SpotifyPlayerComponent = () => {
                     const isForward = state.track_window.previous_tracks.some(t => t.uri === prevTrackUri.current);
 
                     if (isForward) {
-                        console.log("Song position:", songPosition);
                         setSongPosition(prev => prev + 1);
                     } else if (isBackward) {
-                        console.log("Song position:", songPosition)
                         setSongPosition(prev => prev - 1);
                     }
 
@@ -196,16 +204,15 @@ const SpotifyPlayerComponent = () => {
             const existingToken = sessionStorage.getItem("access_token");
 
             if(!existingToken){
-                console.log("refreshing access token...");
                 refreshAccessToken();
-            } else {
-                console.log("Token already exists, skipping refresh");
             }
         }
     }, [isLoggedIn, spotifyAuthorized]);
 
+    const frontendUrl = import.meta.env.VITE_FRONTEND_URL;
+
     const CLIENT_ID = "9d3227f170f3420ca40575eedd592d29";
-    const REDIRECT_URI = "http://127.0.0.1:3000";
+    const REDIRECT_URI = frontendUrl;
     const SCOPE = 'streaming user-modify-playback-state user-read-private user-read-email';
     const AUTH_URL = new URL("https://accounts.spotify.com/authorize");
 
@@ -248,7 +255,6 @@ const SpotifyPlayerComponent = () => {
         });
 
         AUTH_URL.search = new URLSearchParams(params).toString();
-        console.log(AUTH_URL.toString());
         window.location.href = AUTH_URL.toString();
     }
 
@@ -270,7 +276,6 @@ const SpotifyPlayerComponent = () => {
             try {
                 const response = await getAccessToken(code, codeVerifier);
                 const data = response.data.data;
-                console.log(response.data);
     
                 sessionStorage.setItem('access_token', data.access_token);
                 setAccessToken(data.access_token);
@@ -291,6 +296,9 @@ const SpotifyPlayerComponent = () => {
     }
 
     const refreshAccessToken = async () => {
+        if(refreshRef.current) return;
+        refreshRef.current = true;
+
         const expiresAt = sessionStorage.getItem('token_expiration');
         const now = new Date().getTime();
 
@@ -313,22 +321,27 @@ const SpotifyPlayerComponent = () => {
             } catch(error) {
                 console.log("refresh token error: ", error);
                 setSpotifyAuthorized(false);
+            } finally {
+                refreshRef.current = false;
             }
-        }
+        }else{
+        console.log("Spotify token has not expired");
     }
+    } 
     
     function handleAlbumChange(song){
         console.log("album has changed");
+        console.log(song);
         const option = {value: song.value, label: song.label}
         setAlbumToPlay(option);
 
         if(cassettes){
-            const found = cassettes?.find(c => c.title == song.label);
-            console.log("Found Cassette:", found.cover_image);
+            const found = cassettes?.find(c => (c.name + " - " + c.title) == song.label);
+            console.log("Found Cassette for album change:", found);
             if(found){
                 setFoundCassette(found);
                 setCoverImage(found.cover_image);
-                const trackList = found.track_List || [];
+                const trackList = found.track_list || [];
                 setTrackList(trackList);
             }
         }
@@ -336,17 +349,21 @@ const SpotifyPlayerComponent = () => {
         if(deviceId){
             player.activateElement()
             setIsPlaying(true);
-            setSongPosition(1);                        
-            changePlaybackAlbum(song.value, accessToken, deviceId);
+            setSongPosition(1);     
+            refreshAccessToken();                  
+            changePlaybackAlbum(song.value, accessToken, deviceId).then((response) => {
+                setSpotifyTimedOut(false); 
+            }).catch(error => {
+                console.log(error);
+                setSpotifyTimedOut(true);
+            });
         }
     }
     
     const pause = () => {
         if(player){
             setIsPlaying(false);
-            player.pause().then(() => {
-                console.log('Paused!');
-            });
+            player.pause();
         }
     }
 
@@ -354,9 +371,7 @@ const SpotifyPlayerComponent = () => {
         if(player){
             setIsPlaying(true);
             player.activateElement();
-            player.resume().then(() => {
-                console.log('Resumed!');
-            });
+            player.resume();
         }
     }
 
@@ -451,6 +466,7 @@ const SpotifyPlayerComponent = () => {
                     </div>
                 </div>
             </div>
+            {spotifyTimedOut && <p className={styles.invalid}>Spotify has timed out or ran into an error, try refreshing the page</p>}
         </div>
     )
 }

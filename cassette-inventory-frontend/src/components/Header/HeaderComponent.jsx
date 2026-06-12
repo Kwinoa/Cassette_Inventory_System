@@ -1,7 +1,7 @@
 import React, {useState, useEffect, useContext} from 'react'
 import styles from './Header.module.css'
 import {useNavigate} from 'react-router-dom'
-import {getSelf, logout} from "../../services/CassetteService"
+import {logout} from "../../services/CassetteService"
 import {AuthContext} from "../AuthContext/AuthContext"
 
 const HeaderComponent = () => {
@@ -11,22 +11,6 @@ const HeaderComponent = () => {
   const [query, setQuery] = useState("");
 
   const navigator = useNavigate();
-
-  useEffect(() => {
-    if(isLoggedIn){
-      getSelf().then((response) => {
-        setIsLoggedIn(true);
-        setFirstName(response.data.firstName);
-        setLastName(response.data.lastName);
-        setOfficialEmail(response.data.email);
-      }).catch(() => {
-        setIsLoggedIn(false);
-        setFirstName('');
-        setLastName('');
-        setOfficialEmail('');
-      })
-    }
-  }, [firstName])
 
   function loginOrLogoutButton() {
       if (isLoggedIn) {
@@ -41,7 +25,7 @@ const HeaderComponent = () => {
     logout().then((response) => {
           if(response.status == 200)
             sessionStorage.clear();
-            player.disconnect();
+            player?.disconnect();
 
             setIsLoggedIn(false);
             setFirstName('');
@@ -62,6 +46,7 @@ const HeaderComponent = () => {
     e.preventDefault();
     console.log(`/search?query=${encodeURIComponent(query)}`);
     navigator(`/search?query=${encodeURIComponent(query)}`);
+    setQuery("");
   }
 
   function gotToSmartSearchPage(e){
@@ -83,8 +68,7 @@ const HeaderComponent = () => {
     <header>
       <nav>
         <button className={styles.logo} onClick={goToHomePage}>
-          <svg viewBox="0 -11 64 64" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlnsXlink="http://www.w3.org/1999/xlink" xmlns:sketch="http://www.bohemiancoding.com/sketch/ns" fill="#000000"><g id="SVGRepo_bgCarrier" strokeWidth="0"></g><g id="SVGRepo_tracerCarrier" strokeLinecap="round" strokeLinejoin="round"></g><g id="SVGRepo_iconCarrier"> <title>Cassette</title> <desc>Created with Sketch.</desc> <defs> </defs> <g id="Page-1" stroke="none" strokeWidth="1" fill="none" fillRule="evenodd" sketch:type="MSPage"> <g id="Cassette" sketch:type="MSLayerGroup" transform="translate(1.000000, 1.000000)" stroke="#4b2e2e" strokeWidth="2"> <path d="M62,38 C62,39.1 61.1,40 60,40 L2,40 C0.9,40 0,39.1 0,38 L0,2 C0,0.9 0.9,0 2,0 L12,0 L19.2,7 L43.9,7 L51.2,0 L60,0 C61.1,0 62,0.9 62,2 L62,38 L62,38 Z" id="Shape" sketch:type="MSShapeGroup"> </path> <path d="M15,30 L47.7,30" id="Shape" sketch:type="MSShapeGroup"> </path> <path d="M18,1 L45,1" id="Shape" sketch:type="MSShapeGroup"> </path> <circle id="Oval" sketch:type="MSShapeGroup" cx="15" cy="23" r="7"> </circle> <circle id="Oval" sketch:type="MSShapeGroup" cx="47" cy="23" r="7"> </circle> </g> </g> </g></svg>
-        </button>
+          <svg viewBox="0 -11 64 64" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlnsXlink="http://www.w3.org/1999/xlink" xmlns:sketch="http://www.bohemiancoding.com/sketch/ns" fill="#000000"><g id="SVGRepo_bgCarrier" strokeWidth="0"></g><g id="SVGRepo_tracerCarrier" strokeLinecap="round" strokeLinejoin="round"></g><g id="SVGRepo_iconCarrier"> <title>Cassette</title> <desc>Created with Sketch.</desc> <defs> </defs> <g id="Page-1" stroke="none" strokeWidth="1" fill="none" fillRule="evenodd" sketch:type="MSPage"> <g id="Cassette" sketch:type="MSLayerGroup" transform="translate(1.000000, 1.000000)" stroke="#243C4C" strokeWidth="2"> <path d="M62,38 C62,39.1 61.1,40 60,40 L2,40 C0.9,40 0,39.1 0,38 L0,2 C0,0.9 0.9,0 2,0 L12,0 L19.2,7 L43.9,7 L51.2,0 L60,0 C61.1,0 62,0.9 62,2 L62,38 L62,38 Z" id="Shape" sketch:type="MSShapeGroup"> </path> <path d="M15,30 L47.7,30" id="Shape" sketch:type="MSShapeGroup"> </path> <path d="M18,1 L45,1" id="Shape" sketch:type="MSShapeGroup"> </path> <circle id="Oval" sketch:type="MSShapeGroup" cx="15" cy="23" r="7"> </circle> <circle id="Oval" sketch:type="MSShapeGroup" cx="47" cy="23" r="7"> </circle> </g> </g> </g></svg>        </button>
         <form className={styles.search}>
           <label className={styles.label}>Search:</label>
           <input name={query} type="text" value={query} onChange={(e) => {setQuery(e.target.value)}}></input>

@@ -7,7 +7,11 @@ import java.util.stream.Collectors;
 
 import org.cassettes.cassetteinventorysystem.controller.DiscogsController;
 import org.cassettes.cassetteinventorysystem.entity.Cassette;
+import org.cassettes.cassetteinventorysystem.entity.User;
+import org.cassettes.cassetteinventorysystem.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import com.openai.client.OpenAIClient;
@@ -20,12 +24,30 @@ public class OpenAiService {
 	OpenAIClient openAiClient;
 	DiscogsController discogsController;
 	CassetteService cassetteService;
+	
+	@Autowired 
+	private UserRepository userRepository;
 
 	@Autowired
 	public OpenAiService(OpenAIClient openAiClient, CassetteService cassetteService, DiscogsController discogsController) {
 		this.openAiClient = openAiClient;
 		this.cassetteService = cassetteService;
 		this.discogsController = discogsController;
+	}
+	
+	private User getCurrentUser() {
+		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+		if(auth == null || !auth.isAuthenticated()) {
+			throw new RuntimeException("Not Authenticated");
+		}
+        String email = auth.getName();
+        User user = userRepository.findByEmail(email);
+        System.out.println("=============================");
+        System.out.println("USER: " + email);
+        if(user == null) {
+			throw new RuntimeException("User Cassettes Could Not Be Found");
+		}
+        return user;
 	}
 	
 	
@@ -125,13 +147,19 @@ public class OpenAiService {
 	public List<Cassette> getCassetteRecommendations(){
 		List<Cassette> recommendedCassettes = new ArrayList<>();
 		
-		String[] recommendationsList = getRecommendations();
-		for(String title : recommendationsList) {
-			Cassette cassette = discogsController.searchAlbum(title).getBody().getData();	
-			if(cassette != null)
-				recommendedCassettes.add(cassette);		
+		User user = getCurrentUser();
+		int limit = user.getSmartLimit();
+		if(limit > 0) {
+			String[] recommendationsList = getRecommendations();
+			for(String title : recommendationsList) {
+				Cassette cassette = discogsController.searchAlbum(title).getBody().getData();	
+				if(cassette != null)
+					recommendedCassettes.add(cassette);		
+			}
+			System.out.println(recommendedCassettes.size());
+			user.setSmartLimit(limit - 1);
+			userRepository.save(user);
 		}
-		System.out.println(recommendedCassettes.size());
 		return recommendedCassettes;
 	}
 	

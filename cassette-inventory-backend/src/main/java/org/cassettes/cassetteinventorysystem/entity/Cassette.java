@@ -33,6 +33,9 @@ public class Cassette {
 	private String title;
 	
 	@Column(nullable = false)
+	private String name;
+	
+	@Column(nullable = false)
 	private long year;
 	
 	@Column(nullable = false)
@@ -51,18 +54,26 @@ public class Cassette {
 	private LocalDate date;
 	
 	@Column(nullable = true)
-	private String albumUri;
+	private String album_uri;
+	
+	@Column(nullable = false)
+	private String resource_url;
+	
+	@Column(nullable = true)
+	private int track_list_size;
 	
 	@ElementCollection
 	@CollectionTable(name = "cassette_tracks", joinColumns = @JoinColumn(name = "cassette_id"))
 	@Column(name = "track", nullable = false)
 	private List<String> track_list = new ArrayList<>();
 
-	public Cassette(long id, String title, long year, String format, String cover_image,
-			List<String> genre, List<String> style, LocalDate date, List<String> track_list, String albumUri) {
+	public Cassette(long id, String title, String name, long year, String format, String cover_image,
+			List<String> genre, List<String> style, LocalDate date, List<String> track_list,
+			String album_uri, String resource_url, int track_list_size) {
 		super();
 		this.id = id;
 		this.title = title;
+		this.name = name;
 		this.year = year;
 		this.format = format;
 		this.cover_image = cover_image;
@@ -70,7 +81,9 @@ public class Cassette {
 		this.style = style;
 		this.date = date;
 		this.track_list = track_list;
-		this.albumUri = albumUri;
+		this.album_uri = album_uri;
+		this.resource_url = resource_url;
+		this.track_list_size = track_list_size;
 	}
 
 	public Cassette() {
@@ -99,6 +112,14 @@ public class Cassette {
 
 	public void setTitle(String title) {
 		this.title = title;
+	}
+	
+	public String getName() {
+		return name;
+	}
+	
+	public void setName(String name) {
+		this.name = name;
 	}
 
 	public long getYear() {
@@ -149,20 +170,36 @@ public class Cassette {
 		this.date = date;
 	}
 	
-	public List<String> getTrack_List(){
+	public List<String> getTrack_list(){
 		return track_list;
 	}
 	
-	public void setTrack_List(List<String> track_list){
+	public void setTrack_list(List<String> track_list){
 		this.track_list = track_list;
 	}
 	
-	public String getAlbumUri() {
-		return albumUri;
+	public String getAlbum_uri() {
+		return album_uri;
 	}
 	
-	public void setAlbumUri(String albumUri) {
-		this.albumUri = albumUri;
+	public void setAlbum_uri(String albumUri) {
+		this.album_uri = albumUri;
+	}
+	
+	public String getResource_url() {
+		return resource_url;
+	}
+	
+	public void setResource_url(String resourceUrl) {
+		this.resource_url = resourceUrl;
+	}
+	
+	public int getTrack_list_size() {
+		return track_list_size;
+	}
+	
+	public void setTrack_list_size(int trackListSize) {
+		this.track_list_size = trackListSize;
 	}
 
 }

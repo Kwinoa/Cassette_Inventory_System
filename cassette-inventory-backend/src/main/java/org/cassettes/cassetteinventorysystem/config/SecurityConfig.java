@@ -2,6 +2,7 @@ package org.cassettes.cassetteinventorysystem.config;
 
 import java.util.List;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpStatus;
@@ -21,6 +22,9 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 @Configuration
 public class SecurityConfig implements WebMvcConfigurer {
 	
+	@Value("${frontend.url}")
+	private String frontendUrl;
+	
 	@Bean
 	public PasswordEncoder passwordEncoder() {
 	    return new BCryptPasswordEncoder();
@@ -37,7 +41,7 @@ public class SecurityConfig implements WebMvcConfigurer {
 	    http
 	        .cors(cors -> cors.configurationSource(request -> {
 	            CorsConfiguration config = new CorsConfiguration();
-	            config.setAllowedOrigins(List.of("http://127.0.0.1:3000"));
+	            config.setAllowedOrigins(List.of(frontendUrl));
 	            config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
 	            config.setAllowedHeaders(List.of("*")); // Added for completeness
 	            config.setAllowCredentials(true);
@@ -50,13 +54,14 @@ public class SecurityConfig implements WebMvcConfigurer {
 	        )
 	        .sessionManagement(session ->
 	            session.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
-	            .sessionConcurrency(concurrency -> concurrency.maximumSessions(3))
-	            .invalidSessionUrl("/logout"))
+	            .sessionConcurrency(concurrency -> concurrency.maximumSessions(3)))
 	        .authorizeHttpRequests(auth -> auth
 	        	.requestMatchers(org.springframework.http.HttpMethod.OPTIONS, "/**").permitAll()
 	            .requestMatchers("/api/login", "/api/logout", "/api/register", "/search", "/public/media/**").permitAll()
 	            .anyRequest().authenticated()
 	        )
+	        .logout(logout -> logout
+	        		.permitAll())
 	        .exceptionHandling(ex -> ex
 	            .authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED))
 	        );

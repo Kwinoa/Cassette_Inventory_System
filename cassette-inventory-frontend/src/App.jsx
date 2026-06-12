@@ -31,7 +31,6 @@ function App() {
 
                 sessionStorage.clear();
 
-                navigate("/logout"); 
               }
               return Promise.reject(error);
           }

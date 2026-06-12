@@ -22,9 +22,9 @@ div.list ul {
 }
 
 div.list ul li {
-    padding: 0.2rem 0.75rem;
+    padding: 0.1rem 0.75rem;
     border: 1px solid var(--secondary-color);
-    border-radius: 15px;
+    border-radius: 10px;
     font-size: 0.85rem;
 }
 
@@ -34,9 +34,9 @@ div.list ul p {
 
 div.list button.toggleButton {
     background-color: var(--secondary-color);
-    padding: 0.2rem 0.75rem;
+    padding: 0.1rem 0.75rem;
     border: 1px solid var(--secondary-color);
-    border-radius: 15px;
+    border-radius: 10px;
     box-shadow: 1px 1px 2px lightgrey;
     font-size: 0.85rem;
 }

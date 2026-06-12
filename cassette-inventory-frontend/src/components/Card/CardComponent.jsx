@@ -1,4 +1,4 @@
-import React, {useEffect, useContext} from 'react'
+import React, {useEffect, useContext, useState} from 'react'
 import styles from './Card.module.css'
 import LabelComponent from '../Label/LabelComponent';
 import { useNavigate } from 'react-router-dom'
@@ -9,23 +9,22 @@ const CardComponent = ({ cassette }) => {
 
     const {spotifyAuthorized, accessToken, officialEmail, cassettes, setCassettes} = useContext(AuthContext);
     const navigator = useNavigate();
+    const [cassetteAdded, setCassetteAdded] = useState(false);
 
     useEffect(() => {
         const accessToken = sessionStorage.getItem("access_token");
 
         if(accessToken && cassette.id != 0){
-            if(!cassette.albumUri){
-                const list = cassette.title.split(" - ");
-                const artist = list[0];
-                const album = list[1];
-                console.log("Artist:", artist, "Album:", album);
+            if(!cassette.album_uri){
+                const artist = cassette.name;
+                const album = cassette.title;
                 setSpotifyAlbumUri(cassette.id, accessToken, artist, album).then((response) => {
                     console.log(response);
                     fetchData();
                 })
             }
         }
-    }, [spotifyAuthorized, accessToken, cassettes])
+    }, [spotifyAuthorized, accessToken, cassettes, cassetteAdded])
 
     async function fetchData(){
         try {
@@ -36,9 +35,9 @@ const CardComponent = ({ cassette }) => {
                 email: officialEmail,
                 data: data
             }
-                        
+            
             sessionStorage.setItem('cassette_cache', JSON.stringify(cassetteCache));
-            sessionStorage.setItem('cache_timestamp', Date.now()); 
+            setCassettes(data);
         } catch (error) {
             console.error("Fetch failed", error);
         }
@@ -73,11 +72,22 @@ const CardComponent = ({ cassette }) => {
         console.log(cassette);
         saveCassette(cassette).then((response) => {
             console.log(response.data.data);
+            const savedCassette = response.data.data;
+            if(!savedCassette.albumUri){
+                const artist = savedCassette.name;
+                const album = savedCassette.title;
+                console.log("Artist:", artist, "Album:", album);
+                setSpotifyAlbumUri(cassette.id, accessToken, artist, album).then((response) => {
+                    console.log(response);
+                    fetchData();
+                })
+            }
             fetchData();
             navigator('/');
         }).catch(error => {
             console.log(error);
         })
+        setCassetteAdded(true);
     }
 
     function editOrAddButton() {
@@ -96,13 +106,13 @@ const CardComponent = ({ cassette }) => {
             <img src={cassette.cover_image} alt="cassette album thumbnail" />
             <div className={styles.card_info}>
                 <div>
-                    <h3 className={styles.title}>{cassette.title}</h3>
+                    {cassette.name ? <h3 className={styles.title}>{cassette.name} - {cassette.title}</h3> : <h3 className={styles.title}>{cassette.title}</h3>}
                     {editOrAddButton()}
                 </div>
                 <p className={styles.year}>{cassette.year}</p>
                 <LabelComponent labels={cassette.genre} labelName="Genres:" />
                 <LabelComponent labels={cassette.style} labelName="Styles:" />
-                <p className={styles.date_added}>Added {cassette.date}</p>
+                {cassette && cassette.id != 0 && <p className={styles.date_added}>Added {cassette.date}</p>}
             </div>
         </li>
     )

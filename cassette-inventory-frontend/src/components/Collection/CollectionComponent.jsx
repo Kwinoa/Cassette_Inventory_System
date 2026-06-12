@@ -17,25 +17,20 @@ const CollectionComponent = () => {
     const navigator = useNavigate();
 
     useEffect(() => {
-        if(isLoggedIn){
-            const cassetteCache = JSON.parse(sessionStorage.getItem('cassette_cache'));
-            if(cassetteCache && cassetteCache.email == officialEmail){
-                console.log("Using saved data...")
-                setCassettes(cassetteCache.data);
-                setOriginalCassettes(cassetteCache.data);
-            }else {
-                console.log("Fetching data...");
-                fetchData();
-            }
-        }
-    }, [isLoggedIn])
-
-    useEffect(() => {
-        const name = sessionStorage.getItem("firstName");
-        if(name){
-            setFirstName(name);
+        const cassetteCache = JSON.parse(sessionStorage.getItem('cassette_cache'));
+        if(cassetteCache && cassetteCache.email == officialEmail){
+            console.log("Using saved data...")
+            setCassettes(cassetteCache.data);
+            setOriginalCassettes(cassetteCache.data);
+        }else {
+            console.log("Fetching data...");
+            fetchData();
         }
     }, [])
+
+    useEffect(() => {
+        setFirstName(firstName);
+    }, [firstName])
     
     const fetchData = async () => {
         try {
@@ -48,11 +43,9 @@ const CollectionComponent = () => {
             }
             
             setCassettes(data);
-            console.log(data);
             setOriginalCassettes(data);
             
             sessionStorage.setItem('cassette_cache', JSON.stringify(cassetteCache));
-            sessionStorage.setItem('cache_timestamp', Date.now()); 
         } catch (error) {
             console.error("Fetch failed", error);
         }

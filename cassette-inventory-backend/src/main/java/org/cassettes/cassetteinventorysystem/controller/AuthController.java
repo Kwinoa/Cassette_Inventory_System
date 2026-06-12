@@ -10,20 +10,22 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
+import org.springframework.security.web.context.SecurityContextRepository;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
-import jakarta.servlet.http.HttpServletResponse;
-import org.springframework.security.core.context.SecurityContext;
-import org.springframework.security.web.context.SecurityContextRepository;
-import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
+
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
 @RestController
 public class AuthController {
@@ -41,7 +43,6 @@ public class AuthController {
 
     @PostMapping("/api/register")
     public ResponseEntity<?> register(@RequestBody User user) {
-
         if (userRepository.findByEmail(user.getEmail()) != null) {
             return ResponseEntity
                     .badRequest()
@@ -56,25 +57,40 @@ public class AuthController {
     
     @PostMapping("/api/login")
     public ResponseEntity<ResponseStructure<User>> login(@RequestBody LoginRequest request, HttpServletRequest httpRequest, HttpServletResponse httpResponse) {
-
-    	Authentication auth = authenticationManager.authenticate(
-            new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword())
-        );
-
-        SecurityContext context = SecurityContextHolder.createEmptyContext();
-        context.setAuthentication(auth);
-        SecurityContextHolder.setContext(context);
-
-        // Important to persist session
-        securityContextRepository.saveContext(context, httpRequest, httpResponse);
-        
         ResponseStructure<User> structure = new ResponseStructure<>();
-        
-        structure.setStatusCode(HttpStatus.OK.value());
-        structure.setData(userRepository.findByEmail(request.getEmail()));
-        structure.setMessage("User Logged In Successfully");
-        
-        return new ResponseEntity<>(structure, HttpStatus.OK);
+
+    	try {
+    		Authentication auth = authenticationManager.authenticate(
+    	       new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword())
+    	    );
+
+	        SecurityContext context = SecurityContextHolder.createEmptyContext();
+	        context.setAuthentication(auth);
+	        SecurityContextHolder.setContext(context);
+	
+	        // Important to persist session
+	        securityContextRepository.saveContext(context, httpRequest, httpResponse);
+	        	        
+	        structure.setStatusCode(HttpStatus.OK.value());
+	        structure.setData(userRepository.findByEmail(request.getEmail()));
+	        structure.setMessage("User Logged In Successfully");
+	        
+	        return new ResponseEntity<>(structure, HttpStatus.OK);
+    	}catch(BadCredentialsException e) {
+    		System.out.println("Bad Credentials");
+    		structure.setData(null);
+    		structure.setStatusCode(HttpStatus.UNAUTHORIZED.value());
+    		structure.setMessage("Invalid email or password");
+
+    		return new ResponseEntity<>(structure, HttpStatus.OK);
+    	}catch(Exception e) {
+    		System.out.println("Unauthorized");
+    		structure.setData(null);
+    		structure.setStatusCode(HttpStatus.UNAUTHORIZED.value());
+    		structure.setMessage("Authentication failed");
+    		
+    		return new ResponseEntity<>(structure, HttpStatus.OK);
+    	}
     }
     
     @PostMapping("/api/logout")

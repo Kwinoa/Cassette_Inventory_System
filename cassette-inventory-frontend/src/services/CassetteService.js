@@ -1,7 +1,10 @@
 import axios from 'axios';
 
+const apiUrl = import.meta.env.VITE_CASSETTE_API_URL;
+
+// with credentials sends HttpOnly session cookie by browser on every request
 const api = axios.create({
-    baseURL: "http://127.0.0.1:8080",
+    baseURL: apiUrl,
     withCredentials: true
 });
 
@@ -49,3 +52,5 @@ export const changePlaybackAlbum = (albumUri, accessToken, deviceId) => api.put(
 export const setSpotifyAlbumUri = (id, accessToken, artist, album) => api.post("/spotify/setUri", {cassetteId: id, accessToken: accessToken, artist: artist, album: album})
 
 export const setSpotifyShuffleOff = (accessToken, deviceId) => api.post("/spotify/shuffleOff/" + deviceId, {accessToken: accessToken})
+
+export const getDashboardData = () => api.get("/dashboard");
